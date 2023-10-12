@@ -28,7 +28,7 @@ int main()
     running.job.pid = -1; //pid = -1 means that there is no process running
     vector<waitingJob_t> waiting; //vectore to hold the waiting processes
     
-    /** a internal test
+    /*
     struct job_t j1;
     j1.pid = 1;
     j1.arrivalTime = 0;
@@ -54,8 +54,8 @@ int main()
     loaded.push_back(j2);
     loaded.push_back(j3);
     */
-
-    while(!loaded.empty() && !ready.empty() && running.job.pid != -1 && !waiting.empty()){ //exit when done
+    
+    while(!loaded.empty() || !ready.empty() || running.job.pid != -1 || !waiting.empty()){ //exit when done
 
         //from new into ready
         if (!loaded.empty()){
