@@ -3,16 +3,11 @@
 #include <vector>
 #include <iostream>
 #include <string>
-#include <format>
 #include "header.h"
 
 using namespace std;
 
-void printJob(int time, job_t job, State old, State current){
-    //return "time: " + time + " pid " + job.pid + " Old State: " + printState(old) + " New State " + printState(current) + " \n";
-    //return format("Time: {} | pid: {} | Old State: {} | New State: {} \n", time, job.pid, printState(old), printState(current));
-    //printf("Time: %d | pid: %d | Old State: %s | New State: %s \n", time, job.pid, printState(old), printState(current));
-    //cout << "Time: " << time << " pid: " << job.pid << " Old State: " << printState(old) << " New State " << printState(current) << "\n";
+void printJob(int time, job_t job, State old, State current){ //prints the important info about a job to console
     cout << "Time: ";
     cout << time;
     cout << " | pid: ";
@@ -25,31 +20,56 @@ void printJob(int time, job_t job, State old, State current){
 
 int main()
 {
-    int clock = 0;
-
-    vector<job_t> loaded; //new is a protected term hopefully you can just add stuff into the vector
-    deque<job_t> ready;
-    runningJob_t running;
-    running.job.pid = -1;
-    vector<waitingJob_t> waiting;
+    //setting up the cpu
+    int clock = 0; //ticks up every time the loop is completed
+    vector<job_t> loaded; //new is a protected term using loaded instead
+    deque<job_t> ready; //the ready queue
+    runningJob_t running; //running is a varible as there can only be one running process at a time
+    running.job.pid = -1; //pid = -1 means that there is no process running
+    vector<waitingJob_t> waiting; //vectore to hold the waiting processes
     
+    /** a internal test
     struct job_t j1;
-    j1.pid = 0;
-    j1.arrivalTime = 1;
+    j1.pid = 1;
+    j1.arrivalTime = 0;
+    j1.totalCpuTime = 7;
+    j1.ioFrequency = 2;
+    j1.ioDuration = 3;
+
+    struct job_t j2;
+    j2.pid = 2;
+    j2.arrivalTime = 2;
+    j2.totalCpuTime = 4;
+    j2.ioFrequency = 3;
+    j2.ioDuration = 1;
+
+    struct job_t j3;
+    j3.pid = 3;
+    j3.arrivalTime = 4;
+    j3.totalCpuTime = 2;
+    j3.ioFrequency = 1;
+    j3.ioDuration = 3;
 
     loaded.push_back(j1);
+    loaded.push_back(j2);
+    loaded.push_back(j3);
+    */
 
-    while(!loaded.empty() && !ready.empty() && running.job.pid != -1 && !waiting.empty() || clock < 5){ //exit when done
+    while(!loaded.empty() && !ready.empty() && running.job.pid != -1 && !waiting.empty()){ //exit when done
 
         //from new into ready
         if (!loaded.empty()){
             vector<job_t>::iterator iter = loaded.begin();
 
-            for(iter; iter < loaded.end(); iter++){
-                if(iter->arrivalTime <= clock){
+            for(iter; iter < loaded.end();){
+                if(iter->arrivalTime <= clock){ 
+                    //add to ready
                     ready.push_back(*iter);
-                    loaded.erase(iter);
                     printJob(clock, *iter, New, Ready);
+                    //remove from loaded(new)
+                    loaded.erase(iter);
+                }else{
+                    iter++;
                 }
             }
         }
@@ -58,19 +78,32 @@ int main()
         if (!waiting.empty()){
             vector<waitingJob_t>::iterator iter = waiting.begin();
 
-            for(iter; iter < waiting.end(); iter++){
-                if(iter->job.ioDuration <= iter->time){
-                    ready.push_back(iter->job);
-                    waiting.erase(iter);
-                    printJob(clock, iter->job, New, Ready);
-                }
+            for(iter; iter < waiting.end();){
                 iter->time += 1;
+
+                if(iter->job.ioDuration <= iter->time){
+                    //add to ready
+                    ready.push_back(iter->job);
+                    printJob(clock, iter->job, Waiting, Ready);
+                    //remove from waiting
+                    waiting.erase(iter);
+                }else{
+                    iter++;
+                }
             }
         }
         
         //handle running
         if (running.job.pid >= 0) {
-            if (running.job.ioFrequency <= running.time){ //io
+                running.job.totalCpuTime--;
+                running.time++;
+            
+            if(running.job.totalCpuTime <= 0){ 
+                printJob(clock, running.job, Running, Terminated);
+                //terminate job
+                running.job.pid = -1;
+                running.time = 0;
+            } else if(running.job.ioFrequency <= running.time){
                 //add job to waiting
                 waitingJob_t temp;
                 temp.job = running.job;
@@ -79,27 +112,21 @@ int main()
                 //remove job from
                 running.job.pid = -1;
                 running.time = 0;
-            }else if (running.job.totalCpuTime <= 0){ //Terminate Job
-                printJob(clock, running.job, Running, Terminated);
-                running.job.pid = -1;
-                running.time = 0;
-            }else {
-                running.job.totalCpuTime--;
-                running.time++;
             }
         }
 
         //put an avaible process into running
         if (running.job.pid < 0 && !ready.empty()){
+            //add job to running
             running.job = ready.front();
+            printJob(clock, running.job, Ready, Running);
+            //remove job from ready
             ready.pop_front();
         }
         
 
         clock++;
     }
-
-    cout << loaded.empty();
 
     return 0;
 }

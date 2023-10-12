@@ -1,6 +1,6 @@
 #include <string>
 
-struct job_t
+struct job_t //used to hold the information of a job (process)
 {
     int pid;  //assumption -1 == no job
     int arrivalTime;
@@ -9,21 +9,21 @@ struct job_t
     int ioDuration;
 };
 
-struct runningJob_t
+struct runningJob_t //holds the job that is running and a timer
 {
-    job_t job;
-    int time = 0;
+    job_t job; //job that is running
+    int time = 0; //how long it has been running
 };
 
-struct waitingJob_t
+struct waitingJob_t //holds a job that is waiting and a timer
 {
-    job_t job;
-    int time = 0;
+    job_t job; //job that is waiting
+    int time = 0; //how long it has been waiting
 };
 
-enum State { New, Ready, Running, Waiting, Terminated };
+enum State { New, Ready, Running, Waiting, Terminated }; //the differnet states a job can be in
 
-std::string printState(State s){
+std::string printState(State s){ //turns a state enum into a string
     switch (s)
     {
     case New:
