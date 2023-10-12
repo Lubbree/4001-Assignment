@@ -12,13 +12,13 @@ struct job_t
 struct runningJob_t
 {
     job_t job;
-    int time;
+    int time = 0;
 };
 
 struct waitingJob_t
 {
     job_t job;
-    int time;
+    int time = 0;
 };
 
 enum State { New, Ready, Running, Waiting, Terminated };

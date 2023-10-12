@@ -11,8 +11,16 @@ using namespace std;
 void printJob(int time, job_t job, State old, State current){
     //return "time: " + time + " pid " + job.pid + " Old State: " + printState(old) + " New State " + printState(current) + " \n";
     //return format("Time: {} | pid: {} | Old State: {} | New State: {} \n", time, job.pid, printState(old), printState(current));
-    printf("Time: %d | pid: %d | Old State: %s | New State: %s \n", time, job.pid, printState(old), printState(current));
+    //printf("Time: %d | pid: %d | Old State: %s | New State: %s \n", time, job.pid, printState(old), printState(current));
     //cout << "Time: " << time << " pid: " << job.pid << " Old State: " << printState(old) << " New State " << printState(current) << "\n";
+    cout << "Time: ";
+    cout << time;
+    cout << " | pid: ";
+    cout << job.pid;
+    cout << " | Old State: ";
+    cout << printState(old);
+    cout << " | New State: ";
+    cout << printState(current) << "\n";
 }
 
 int main()
@@ -22,6 +30,7 @@ int main()
     vector<job_t> loaded; //new is a protected term hopefully you can just add stuff into the vector
     deque<job_t> ready;
     runningJob_t running;
+    running.job.pid = -1;
     vector<waitingJob_t> waiting;
     
     struct job_t j1;
@@ -58,14 +67,34 @@ int main()
                 iter->time += 1;
             }
         }
-        /*
-        if (running.job.pid > 0) {
-            if (running.job.ioFrequency <= running.time){
-                waiting.push_back(running.job);
-                break;
+        
+        //handle running
+        if (running.job.pid >= 0) {
+            if (running.job.ioFrequency <= running.time){ //io
+                //add job to waiting
+                waitingJob_t temp;
+                temp.job = running.job;
+                waiting.push_back(temp);
+                printJob(clock, running.job, Running, Waiting);
+                //remove job from
+                running.job.pid = -1;
+                running.time = 0;
+            }else if (running.job.totalCpuTime <= 0){ //Terminate Job
+                printJob(clock, running.job, Running, Terminated);
+                running.job.pid = -1;
+                running.time = 0;
+            }else {
+                running.job.totalCpuTime--;
+                running.time++;
             }
         }
-        */
+
+        //put an avaible process into running
+        if (running.job.pid < 0 && !ready.empty()){
+            running.job = ready.front();
+            ready.pop_front();
+        }
+        
 
         clock++;
     }
