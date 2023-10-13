@@ -23,7 +23,7 @@ struct waitingJob_t //holds a job that is waiting and a timer
 
 enum State { New, Ready, Running, Waiting, Terminated }; //the differnet states a job can be in
 
-std::string printState(State s){ //turns a state enum into a string
+const char* printState(State s){ //turns a state enum into a string
     switch (s)
     {
     case New:

@@ -1,5 +1,6 @@
 # 4001-Assignment
 
-#Hello World
-#Pull test
-#test 2
+Run the bat files in the terminal because they do not load properly on windows otherwise.
+
+Test 1: test1.bat
+Test 2: test2.bat
