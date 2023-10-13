@@ -8,17 +8,10 @@
 using namespace std;
 
 void printJob(int time, job_t job, State old, State current){ //prints the important info about a job to console
-    cout << "Time: ";
-    cout << time;
-    cout << " | pid: ";
-    cout << job.pid;
-    cout << " | Old State: ";
-    cout << printState(old);
-    cout << " | New State: ";
-    cout << printState(current) << "\n";
+    printf("Time: %d | pid: %d | Old State: %s | New State: %s\n", time, job.pid, printState(old), printState(current));
 }
 
-int main()
+int main(int argc, const char** argv)
 {
     //setting up the cpu
     int clock = 0; //ticks up every time the loop is completed
@@ -27,33 +20,26 @@ int main()
     runningJob_t running; //running is a varible as there can only be one running process at a time
     running.job.pid = -1; //pid = -1 means that there is no process running
     vector<waitingJob_t> waiting; //vectore to hold the waiting processes
+
+    FILE* Data_in = fopen(argv[1], "r"); //takes in cvs file
+    if (Data_in == NULL) {
+        printf("No File/Data");
+        return 1;
+    }
     
-    /*
-    struct job_t j1;
-    j1.pid = 1;
-    j1.arrivalTime = 0;
-    j1.totalCpuTime = 7;
-    j1.ioFrequency = 2;
-    j1.ioDuration = 3;
+    char line[255];
 
-    struct job_t j2;
-    j2.pid = 2;
-    j2.arrivalTime = 2;
-    j2.totalCpuTime = 4;
-    j2.ioFrequency = 3;
-    j2.ioDuration = 1;
-
-    struct job_t j3;
-    j3.pid = 3;
-    j3.arrivalTime = 4;
-    j3.totalCpuTime = 2;
-    j3.ioFrequency = 1;
-    j3.ioDuration = 3;
-
-    loaded.push_back(j1);
-    loaded.push_back(j2);
-    loaded.push_back(j3);
-    */
+    while (fgets(line, sizeof(line), Data_in) != NULL) { //parse line by line into type job_t
+        job_t temp;
+        if(sscanf(line, "%d,%d,%d,%d,%d",
+            &temp.pid,
+            &temp.arrivalTime,
+            &temp.totalCpuTime,
+            &temp.ioFrequency,
+            &temp.ioDuration)==5){
+            loaded.push_back(temp);
+        }
+    }
     
     while(!loaded.empty() || !ready.empty() || running.job.pid != -1 || !waiting.empty()){ //exit when done
 
